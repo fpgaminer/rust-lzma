@@ -1,5 +1,5 @@
 [package]
-name = "lzma"
+name = "rust-lzma"
 version = "0.1.0"
 authors = ["fpgaminer <fpgaminer@bitcoin-mining.com>"]
 description = "Simple interface for LZMA compression and decompression."
@@ -9,6 +9,9 @@ readme = "README.md"
 keywords = ["lzma", "compression", "decompression", "xz", "liblzma", "compress", "decompress"]
 license = "MIT"
 build = "build.rs"
+
+[lib]
+name = "lzma"
 
 [dependencies]
 libc = "^0.2"

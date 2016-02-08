@@ -21,9 +21,9 @@ See the documentation for details on usage.
 Cargo.toml:
 ```toml
 [dependencies]
-lzma = "0.1"
+rust-lzma = "0.1"
 ```
-example.rs:
+main.rs:
 ```Rust
 extern crate lzma;
 
@@ -31,9 +31,11 @@ use lzma::LZMAWriter;
 use std::io::prelude::*;
 use std::fs::File;
 
-let f = File::create("foo.xz").unwrap();
-let mut f = LZMAWriter::new_compressor(f, 6).unwrap();
+fn main() {
+	let f = File::create("foo.xz").unwrap();
+	let mut f = LZMAWriter::new_compressor(f, 6).unwrap();
 
-write!(f, "It's a small world!").unwrap();
-f.finish().unwrap();
+	write!(f, "It's a small world!").unwrap();
+	f.finish().unwrap();
+}
 ```
