@@ -6,7 +6,7 @@ description = "Simple interface for LZMA compression and decompression."
 documentation = "https://fpgaminer.github.io/doc/rust-lzma/"
 repository = "https://github.com/fpgaminer/rust-lzma"
 readme = "README.md"
-keywords = ["lzma", "compression", "decompression", "xz", "liblzma", "compress", "decompress"]
+keywords = ["lzma", "compression", "decompression", "xz", "liblzma"]
 license = "MIT"
 build = "build.rs"
 
