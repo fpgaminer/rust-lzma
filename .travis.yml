@@ -1,0 +1,13 @@
+language: rust
+sudo: false
+rust:
+  - stable
+  - beta
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y liblzma-dev
+script:
+  - cargo build --verbose
+  - cargo package --verbose
+  - cargo test --verbose
+  - cargo doc --verbose
