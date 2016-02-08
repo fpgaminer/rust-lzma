@@ -1,6 +1,6 @@
 [package]
 name = "rust-lzma"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["fpgaminer <fpgaminer@bitcoin-mining.com>"]
 description = "Simple interface for LZMA compression and decompression."
 documentation = "https://fpgaminer.github.io/doc/lzma/"
