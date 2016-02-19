@@ -37,6 +37,7 @@ impl lzma_stream {
 	}
 }
 
+unsafe impl Send for lzma_stream {}
 
 #[repr(C)]
 pub struct lzma_allocator {
