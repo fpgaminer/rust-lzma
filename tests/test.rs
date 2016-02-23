@@ -2,6 +2,7 @@ extern crate lzma;
 
 use lzma::error::LzmaError;
 use std::io::{Read, Cursor, Write};
+use std::thread;
 
 
 const TEST_STRING: &'static str = include_str!("test_file.txt");
@@ -73,4 +74,21 @@ fn truncation_causes_error() {
 		},
 		_ => panic!("Decompressing a truncated buffer should return an LzmaError::Buf error"),
 	}
+}
+
+
+// Test to make sure that LzmaReader implements the Send trait correctly
+#[test]
+fn reader_thread_send() {
+	let compressor = lzma::LzmaReader::new_compressor(Cursor::new(TEST_STRING), 5).unwrap();
+	let mut decompressor = lzma::LzmaReader::new_decompressor(compressor).unwrap();
+
+	let output = thread::spawn(move || {
+		let mut s = String::new();
+		decompressor.read_to_string(&mut s).unwrap();
+		s
+
+	}).join().unwrap();
+
+	assert_eq!(TEST_STRING, output);
 }

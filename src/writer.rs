@@ -23,8 +23,9 @@ use std::io::{self, Write};
 use std::ops::Drop;
 use lzma_sys::*;
 use std;
-use error::{LzmaError, LzmaLibResult};
+use error::LzmaError;
 use ::Direction;
+use lzma_stream_wrapper::LzmaStreamWrapper;
 
 
 const DEFAULT_BUF_SIZE: usize = 4 * 1024;
@@ -32,7 +33,7 @@ const DEFAULT_BUF_SIZE: usize = 4 * 1024;
 
 pub struct LzmaWriter<T> {
 	inner: T,
-	stream: lzma_stream,
+	stream: LzmaStreamWrapper,
 	buffer: Vec<u8>,
 	direction: Direction,
 }
@@ -50,21 +51,17 @@ impl<T: Write> LzmaWriter<T> {
 	pub fn with_capacity(capacity: usize, inner: T, direction: Direction, preset: u32) -> Result<LzmaWriter<T>, LzmaError> {
 		let mut writer = LzmaWriter {
 			inner: inner,
-			stream: lzma_stream::new(),
+			stream: LzmaStreamWrapper::new(),
 			buffer: vec![0; capacity],
 			direction: direction,
 		};
 
 		match writer.direction {
 			Direction::Compress => {
-				unsafe {
-					try!(LzmaLibResult::from(lzma_easy_encoder(&mut writer.stream, preset, lzma_check::LZMA_CHECK_CRC64)).map(|_| ()));
-				}
+				try!(writer.stream.easy_encoder(preset, lzma_check::LZMA_CHECK_CRC64))
 			},
 			Direction::Decompress => {
-				unsafe {
-					try!(LzmaLibResult::from(lzma_stream_decoder(&mut writer.stream, std::u64::MAX, 0)).map(|_| ()));
-				}
+				try!(writer.stream.stream_decoder(std::u64::MAX, 0))
 			},
 		}
 
@@ -74,9 +71,7 @@ impl<T: Write> LzmaWriter<T> {
 
 impl<T> Drop for LzmaWriter<T> {
 	fn drop(&mut self) {
-		unsafe {
-			lzma_end(&mut self.stream);
-		}
+		self.stream.end()
 	}
 }
 
@@ -87,11 +82,9 @@ impl<W: Write> LzmaWriter<W> {
 	/// This *must* be called after all writing is done to ensure the last pieces of the compressed
 	/// or decompressed stream get written out.
 	pub fn finish(&mut self) -> Result<(), LzmaError> {
-		self.stream.avail_in = 0;
-
 		loop {
-			match self.lzma_code_and_write(lzma_action::LZMA_FINISH) {
-				Ok(lzma_ret::LZMA_STREAM_END) => break,
+			match self.lzma_code_and_write(&[], lzma_action::LZMA_FINISH) {
+				Ok((lzma_ret::LZMA_STREAM_END,_)) => break,
 				Ok(_) => (),
 				Err(err) => return Err(err),
 			}
@@ -100,41 +93,26 @@ impl<W: Write> LzmaWriter<W> {
 		Ok(())
 	}
 
-	fn lzma_code_and_write(&mut self, action: lzma_action) -> Result<lzma_ret, LzmaError> {
-		self.stream.next_out = self.buffer.as_mut_ptr();
-		self.stream.avail_out = self.buffer.capacity();
+	fn lzma_code_and_write(&mut self, input: &[u8], action: lzma_action) -> Result<(lzma_ret, usize), LzmaError> {
+		let result = self.stream.code(input, &mut self.buffer, action);
+		let ret = try!(result.ret);
 
-		let ret = unsafe {
-			try!(LzmaLibResult::from(lzma_code(&mut self.stream, action)))
-		};
-
-		let written = self.buffer.capacity() - self.stream.avail_out;
-
-		if written > 0 {
-			unsafe {
-				self.buffer.set_len(written);
-			}
-
-			try!(Write::write_all(&mut self.inner, &self.buffer));
+		if result.bytes_written > 0 {
+			try!(Write::write_all(&mut self.inner, &self.buffer[..result.bytes_written]));
 		}
 
-		Ok(ret)
+		Ok((ret, result.bytes_read))
 	}
 }
 
 
 impl<W: Write> Write for LzmaWriter<W> {
 	fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-		self.stream.next_in = buf.as_ptr();
-		self.stream.avail_in = buf.len();
-
-		match self.lzma_code_and_write(lzma_action::LZMA_RUN) {
-			Ok(_) => (),
+		match self.lzma_code_and_write(buf, lzma_action::LZMA_RUN) {
+			Ok((_,bytes_read)) => Ok(bytes_read),
 			Err(LzmaError::Io(err)) => return Err(err),
 			Err(err) => return Err(io::Error::new(io::ErrorKind::Other, err)),
 		}
-
-		Ok(buf.len() - self.stream.avail_in)
 	}
 
 	fn flush(&mut self) -> io::Result<()> {

@@ -24,8 +24,9 @@ use std::io::{self, Read};
 use std::ops::Drop;
 use lzma_sys::*;
 use std;
-use error::{LzmaError, LzmaLibResult};
+use error::LzmaError;
 use ::Direction;
+use lzma_stream_wrapper::LzmaStreamWrapper;
 
 
 const DEFAULT_BUF_SIZE: usize = 4 * 1024;
@@ -33,8 +34,10 @@ const DEFAULT_BUF_SIZE: usize = 4 * 1024;
 
 pub struct LzmaReader<T> {
 	inner: T,
-	stream: lzma_stream,
+	stream: LzmaStreamWrapper,
 	buffer: Vec<u8>,
+	buffer_offset: usize,
+	buffer_len: usize,
 	direction: Direction,
 }
 
@@ -51,21 +54,19 @@ impl<T: Read> LzmaReader<T> {
 	pub fn with_capacity(capacity: usize, inner: T, direction: Direction, preset: u32) -> Result<LzmaReader<T>, LzmaError> {
 		let mut reader = LzmaReader {
 			inner: inner,
-			stream: lzma_stream::new(),
+			stream: LzmaStreamWrapper::new(),
 			buffer: vec![0; capacity],
+			buffer_offset: 0,
+			buffer_len: 0,
 			direction: direction,
 		};
 
 		match reader.direction {
 			Direction::Compress => {
-				unsafe {
-					try!(LzmaLibResult::from(lzma_easy_encoder(&mut reader.stream, preset, lzma_check::LZMA_CHECK_CRC64)).map(|_| ()));
-				}
+				try!(reader.stream.easy_encoder(preset, lzma_check::LZMA_CHECK_CRC64))
 			},
 			Direction::Decompress => {
-				unsafe {
-					try!(LzmaLibResult::from(lzma_stream_decoder(&mut reader.stream, std::u64::MAX, 0)).map(|_| ()));
-				}
+				try!(reader.stream.stream_decoder(std::u64::MAX, 0))
 			},
 		}
 
@@ -75,9 +76,7 @@ impl<T: Read> LzmaReader<T> {
 
 impl<T> Drop for LzmaReader<T> {
 	fn drop(&mut self) {
-		unsafe {
-			lzma_end(&mut self.stream);
-		}
+		self.stream.end()
 	}
 }
 
@@ -86,40 +85,39 @@ impl<R: Read> Read for LzmaReader<R> {
 	/// Reads data from the wrapped object, applies compression/decompression, and puts the results
 	/// into buf.
 	fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-		/* Our code doesn't handle buf.len() being 0, so exit early */
+		// Our code doesn't handle buf.len() being 0, so exit early
 		if buf.len() == 0 {
 			return Ok(0);
 		}
 
-		self.stream.next_out = buf.as_mut_ptr();
-		self.stream.avail_out = buf.len();
-
 		loop {
 			let mut action = lzma_action::LZMA_RUN;
 
-			if self.stream.avail_in == 0 {
-				self.stream.next_in = self.buffer.as_ptr();
-				self.stream.avail_in = try!(self.inner.read(&mut self.buffer));
+			// If our internal read buffer is empty, re-fill it by calling read on the inner Read object.
+			if self.buffer_len == 0 {
+				self.buffer_offset = 0;
+				self.buffer_len = try!(self.inner.read(&mut self.buffer));
 
-				if self.stream.avail_in == 0 {
+				if self.buffer_len == 0 {
 					action = lzma_action::LZMA_FINISH;
 				}
 			}
 
-			let stream_end = unsafe {
-				match LzmaLibResult::from(lzma_code(&mut self.stream, action)) {
-					Ok(lzma_ret::LZMA_STREAM_END) => true,
-					Ok(_) => false,
-					Err(err) => return Err(io::Error::new(io::ErrorKind::Other, err)),
-				}
+			// Instruct liblzma to compress/decompress data from the buffer, and write the results to buf
+			let result = self.stream.code(&self.buffer[self.buffer_offset..(self.buffer_offset+self.buffer_len)], buf, action);
+			self.buffer_offset += result.bytes_read;
+			self.buffer_len -= result.bytes_read;
+
+			let stream_end = match result.ret {
+				Ok(lzma_ret::LZMA_STREAM_END) => true,
+				Ok(_) => false,
+				Err(err) => return Err(io::Error::new(io::ErrorKind::Other, err)),
 			};
 
-			let bytes_read = buf.len() - self.stream.avail_out;
-
-			/* We have to loop until we get at least 1 byte or EOF, because most users of
-			 * Read::read assume that a return value of 0 is EOF. */
-			if stream_end || bytes_read > 0 {
-				return Ok(bytes_read);
+			// We have to loop until we get at least 1 byte or EOF, because most users of
+		 	// Read::read assume that a return value of 0 is EOF.
+			if stream_end || result.bytes_written > 0 {
+				return Ok(result.bytes_written);
 			}
 		}
 	}

@@ -32,6 +32,7 @@ pub enum Direction {
 }
 
 pub mod lzma_sys;
+pub mod lzma_stream_wrapper;
 pub mod reader;
 pub mod writer;
 pub mod error;
