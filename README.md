@@ -21,7 +21,7 @@ See the documentation for details on usage.
 Cargo.toml:
 ```toml
 [dependencies]
-rust-lzma = "0.1"
+rust-lzma = "0.2"
 ```
 main.rs:
 ```Rust
