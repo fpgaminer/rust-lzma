@@ -37,7 +37,7 @@ pub mod reader;
 pub mod writer;
 pub mod error;
 
-use std::io::{Write, Read, Cursor};
+use std::io::Read;
 pub use reader::LzmaReader;
 pub use writer::LzmaWriter;
 pub use error::LzmaError;
@@ -54,10 +54,9 @@ pub fn compress(buf: &[u8], preset: u32) -> Result<Vec<u8>, LzmaError> {
 	let mut output: Vec<u8> = Vec::new();
 
 	{
-		let mut pipe = try!(LzmaWriter::new_compressor(&mut output, preset));
+		let mut reader = try!(LzmaReader::new_compressor(buf, preset));
 
-		try!(pipe.write_all(buf));
-		try!(pipe.finish());
+		try!(reader.read_to_end(&mut output));
 	}
 
 	Ok(output)
@@ -69,10 +68,9 @@ pub fn decompress(buf: &[u8]) -> Result<Vec<u8>, LzmaError> {
 	let mut output: Vec<u8> = Vec::new();
 
 	{
-		let mut cursor = Cursor::new(buf);
-		let mut pipe = try!(LzmaReader::new_decompressor(&mut cursor));
+		let mut reader = try!(LzmaReader::new_decompressor(buf));
 
-		try!(pipe.read_to_end(&mut output));
+		try!(reader.read_to_end(&mut output));
 	}
 
 	Ok(output)
