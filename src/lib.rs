@@ -3,14 +3,14 @@
 //! compressing better than bzip2.  liblzma implements the XZ variant, so it can read and write
 //! `.xz` files/streams.
 //!
-//! Two interfaces are provided.  `LZMAReader`/`LZMAWriter` are generic Readers and Writers that
+//! Two interfaces are provided.  `LzmaReader`/`LzmaWriter` are generic Readers and Writers that
 //! can be composed with other `Read`/`Write` interfaces.  For example, wrap them around a `File`
 //! and you can write data to a file while compressing it on the fly, or stream in an `xz` file
 //! from disk.
 //!
 //! `compress`/`decompress` are easy to use functions for simple use cases.
 //!
-//! See the `LZMAReader` and `LZMAWriter` documentation for further details on that interface.
+//! See the `LzmaReader` and `LzmaWriter` documentation for further details on that interface.
 //! `compress` and `decompress` are documented here.
 //!
 //! # Examples
@@ -37,9 +37,9 @@ pub mod writer;
 pub mod error;
 
 use std::io::{Write, Read, Cursor};
-pub use reader::LZMAReader;
-pub use writer::LZMAWriter;
-pub use error::LZMAError;
+pub use reader::LzmaReader;
+pub use writer::LzmaWriter;
+pub use error::LzmaError;
 
 
 pub const EXTREME_PRESET: u32 = (1 << 31);
@@ -49,11 +49,11 @@ pub const EXTREME_PRESET: u32 = (1 << 31);
 ///
 /// preset is [0-9] and corresponds to xz's presets.
 /// Binary-or with EXTREME_PRESET for --extreme (e.g. 9 | EXTREME_PRESET).
-pub fn compress(buf: &[u8], preset: u32) -> Result<Vec<u8>, LZMAError> {
+pub fn compress(buf: &[u8], preset: u32) -> Result<Vec<u8>, LzmaError> {
 	let mut output: Vec<u8> = Vec::new();
 
 	{
-		let mut pipe = try!(LZMAWriter::new_compressor(&mut output, preset));
+		let mut pipe = try!(LzmaWriter::new_compressor(&mut output, preset));
 
 		try!(pipe.write_all(buf));
 		try!(pipe.finish());
@@ -64,12 +64,12 @@ pub fn compress(buf: &[u8], preset: u32) -> Result<Vec<u8>, LZMAError> {
 
 
 /// Decompress `buf` and return the result.
-pub fn decompress(buf: &[u8]) -> Result<Vec<u8>, LZMAError> {
+pub fn decompress(buf: &[u8]) -> Result<Vec<u8>, LzmaError> {
 	let mut output: Vec<u8> = Vec::new();
 
 	{
 		let mut cursor = Cursor::new(buf);
-		let mut pipe = try!(LZMAReader::new_decompressor(&mut cursor));
+		let mut pipe = try!(LzmaReader::new_decompressor(&mut cursor));
 
 		try!(pipe.read_to_end(&mut output));
 	}

@@ -7,7 +7,7 @@ as XZ or 7zip, (as in, files with the `.xz` or `.7z` file extension). LZMA
 compression is fast and aggressive, compressing better than bzip2.  liblzma
 implements the XZ variant, so it can read and write `.xz` files/streams.
 
-Two interfaces are provided.  `LZMAReader`/`LZMAWriter` are generic Readers and
+Two interfaces are provided.  `LzmaReader`/`LzmaWriter` are generic Readers and
 Writers that can be composed with other `Read`/`Write` interfaces.  For example,
 wrap them around a `File` and you can write data to a file while compressing it
 on the fly, or stream in an `xz` file from disk.
@@ -27,13 +27,13 @@ main.rs:
 ```Rust
 extern crate lzma;
 
-use lzma::LZMAWriter;
+use lzma::LzmaWriter;
 use std::io::prelude::*;
 use std::fs::File;
 
 fn main() {
 	let f = File::create("foo.xz").unwrap();
-	let mut f = LZMAWriter::new_compressor(f, 6).unwrap();
+	let mut f = LzmaWriter::new_compressor(f, 6).unwrap();
 
 	write!(f, "It's a small world!").unwrap();
 	f.finish().unwrap();

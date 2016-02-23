@@ -1,6 +1,6 @@
 extern crate lzma;
 
-use lzma::error::LZMAError;
+use lzma::error::LzmaError;
 use std::io::{Read, Cursor, Write};
 
 
@@ -34,8 +34,8 @@ fn extreme() {
 
 #[test]
 fn reader_wormhole() {
-	let compressor = lzma::LZMAReader::new_compressor(Cursor::new(TEST_STRING), 5).unwrap();
-	let mut decompressor = lzma::LZMAReader::new_decompressor(compressor).unwrap();
+	let compressor = lzma::LzmaReader::new_compressor(Cursor::new(TEST_STRING), 5).unwrap();
+	let mut decompressor = lzma::LzmaReader::new_decompressor(compressor).unwrap();
 	let mut s = String::new();
 
 	decompressor.read_to_string(&mut s).unwrap();
@@ -48,8 +48,8 @@ fn reader_wormhole() {
 fn writer_wormhole() {
 	let mut output = vec![0u8; 0];
 	{
-		let decompressor = lzma::LZMAWriter::new_decompressor(&mut output).unwrap();
-		let mut compressor = lzma::LZMAWriter::new_compressor(decompressor, 2).unwrap();
+		let decompressor = lzma::LzmaWriter::new_decompressor(&mut output).unwrap();
+		let mut compressor = lzma::LzmaWriter::new_compressor(decompressor, 2).unwrap();
 
 		write!(compressor, "{}", TEST_STRING).unwrap();
 		compressor.finish().unwrap();
@@ -65,12 +65,12 @@ fn truncation_causes_error() {
 	let bad_len = compressed.len() - 1;
 	compressed.truncate(bad_len);
 	match lzma::decompress(&mut compressed) {
-		Err(lzma::LZMAError::Io(err)) => {
-			match *err.get_ref().unwrap().downcast_ref::<LZMAError>().unwrap() {
-				LZMAError::Buf => (),
-				_ => panic!("Decompressing a truncated buffer should return an LZMAError::Buf error"),
+		Err(lzma::LzmaError::Io(err)) => {
+			match *err.get_ref().unwrap().downcast_ref::<LzmaError>().unwrap() {
+				LzmaError::Buf => (),
+				_ => panic!("Decompressing a truncated buffer should return an LzmaError::Buf error"),
 			}
 		},
-		_ => panic!("Decompressing a truncated buffer should return an LZMAError::Buf error"),
+		_ => panic!("Decompressing a truncated buffer should return an LzmaError::Buf error"),
 	}
 }

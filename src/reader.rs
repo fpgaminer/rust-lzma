@@ -1,19 +1,19 @@
-//! This module implements `LZMAReader`.
+//! This module implements `LzmaReader`.
 //!
-//! `LZMAReader` implements the LZMA (XZ) compression/decompression algorithm as a generic
+//! `LzmaReader` implements the LZMA (XZ) compression/decompression algorithm as a generic
 //! Reader.  In other words, it behaves similar to BufReader.  Instead of buffering the `Read`
-//! object passed to it, `LZMAReader` applies compression or decompression to it as it's read.
+//! object passed to it, `LzmaReader` applies compression or decompression to it as it's read.
 //!
 //!
 //! # Examples
 //!
 //! ```no_run
-//! use lzma::LZMAReader;
+//! use lzma::LzmaReader;
 //! use std::io::prelude::*;
 //! use std::fs::File;
 //!
 //! let f = File::open("foo.xz").unwrap();
-//! let mut f = LZMAReader::new_decompressor(f).unwrap();
+//! let mut f = LzmaReader::new_decompressor(f).unwrap();
 //! let mut s = String::new();
 //!
 //! f.read_to_string(&mut s).unwrap();
@@ -24,14 +24,14 @@ use std::io::{self, Read};
 use std::ops::Drop;
 use lzma_sys::*;
 use std;
-use error::{LZMAError, LZMALibResult};
+use error::{LzmaError, LzmaLibResult};
 use ::Direction;
 
 
 const DEFAULT_BUF_SIZE: usize = 4 * 1024;
 
 
-pub struct LZMAReader<T> {
+pub struct LzmaReader<T> {
 	inner: T,
 	stream: lzma_stream,
 	buffer: Vec<u8>,
@@ -39,17 +39,17 @@ pub struct LZMAReader<T> {
 }
 
 
-impl<T: Read> LZMAReader<T> {
-	pub fn new_compressor(inner: T, preset: u32) -> Result<LZMAReader<T>, LZMAError> {
-		LZMAReader::with_capacity(DEFAULT_BUF_SIZE, inner, Direction::Compress, preset)
+impl<T: Read> LzmaReader<T> {
+	pub fn new_compressor(inner: T, preset: u32) -> Result<LzmaReader<T>, LzmaError> {
+		LzmaReader::with_capacity(DEFAULT_BUF_SIZE, inner, Direction::Compress, preset)
 	}
 
-	pub fn new_decompressor(inner: T) -> Result<LZMAReader<T>, LZMAError> {
-		LZMAReader::with_capacity(DEFAULT_BUF_SIZE, inner, Direction::Decompress, 0)
+	pub fn new_decompressor(inner: T) -> Result<LzmaReader<T>, LzmaError> {
+		LzmaReader::with_capacity(DEFAULT_BUF_SIZE, inner, Direction::Decompress, 0)
 	}
 
-	pub fn with_capacity(capacity: usize, inner: T, direction: Direction, preset: u32) -> Result<LZMAReader<T>, LZMAError> {
-		let mut reader = LZMAReader {
+	pub fn with_capacity(capacity: usize, inner: T, direction: Direction, preset: u32) -> Result<LzmaReader<T>, LzmaError> {
+		let mut reader = LzmaReader {
 			inner: inner,
 			stream: lzma_stream::new(),
 			buffer: vec![0; capacity],
@@ -59,12 +59,12 @@ impl<T: Read> LZMAReader<T> {
 		match reader.direction {
 			Direction::Compress => {
 				unsafe {
-					try!(LZMALibResult::from(lzma_easy_encoder(&mut reader.stream, preset, lzma_check::LZMA_CHECK_CRC64)).map(|_| ()));
+					try!(LzmaLibResult::from(lzma_easy_encoder(&mut reader.stream, preset, lzma_check::LZMA_CHECK_CRC64)).map(|_| ()));
 				}
 			},
 			Direction::Decompress => {
 				unsafe {
-					try!(LZMALibResult::from(lzma_stream_decoder(&mut reader.stream, std::u64::MAX, 0)).map(|_| ()));
+					try!(LzmaLibResult::from(lzma_stream_decoder(&mut reader.stream, std::u64::MAX, 0)).map(|_| ()));
 				}
 			},
 		}
@@ -73,7 +73,7 @@ impl<T: Read> LZMAReader<T> {
 	}
 }
 
-impl<T> Drop for LZMAReader<T> {
+impl<T> Drop for LzmaReader<T> {
 	fn drop(&mut self) {
 		unsafe {
 			lzma_end(&mut self.stream);
@@ -82,7 +82,7 @@ impl<T> Drop for LZMAReader<T> {
 }
 
 
-impl<R: Read> Read for LZMAReader<R> {
+impl<R: Read> Read for LzmaReader<R> {
 	/// Reads data from the wrapped object, applies compression/decompression, and puts the results
 	/// into buf.
 	fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
@@ -107,7 +107,7 @@ impl<R: Read> Read for LZMAReader<R> {
 			}
 
 			let stream_end = unsafe {
-				match LZMALibResult::from(lzma_code(&mut self.stream, action)) {
+				match LzmaLibResult::from(lzma_code(&mut self.stream, action)) {
 					Ok(lzma_ret::LZMA_STREAM_END) => true,
 					Ok(_) => false,
 					Err(err) => return Err(io::Error::new(io::ErrorKind::Other, err)),
