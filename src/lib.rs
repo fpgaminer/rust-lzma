@@ -24,8 +24,6 @@
 //! assert_eq!("Like tears in rain", decompressed_str);
 //! ```
 
-extern crate libc;
-
 pub enum Direction {
 	Compress,
 	Decompress,

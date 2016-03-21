@@ -1,4 +1,4 @@
-use libc;
+use std::os::raw::c_void;
 use std::mem;
 
 
@@ -14,12 +14,12 @@ pub struct lzma_stream {
 
 	pub allocator: *const lzma_allocator,
 
-	pub internal: *mut libc::c_void,   /* Actually lzma_internal, but lzma_internal is opaque */
+	pub internal: *mut c_void,   /* Actually lzma_internal, but lzma_internal is opaque */
 
-	pub reserved_ptr1: *mut libc::c_void,
-	pub reserved_ptr2: *mut libc::c_void,
-	pub reserved_ptr3: *mut libc::c_void,
-	pub reserved_ptr4: *mut libc::c_void,
+	pub reserved_ptr1: *mut c_void,
+	pub reserved_ptr2: *mut c_void,
+	pub reserved_ptr3: *mut c_void,
+	pub reserved_ptr4: *mut c_void,
 	pub reserved_int1: *mut u64,
 	pub reserved_int2: *mut u64,
 	pub reserved_int3: *mut usize,
@@ -40,9 +40,9 @@ impl lzma_stream {
 
 #[repr(C)]
 pub struct lzma_allocator {
-	pub alloc: *mut extern fn(opaque: *mut libc::c_void, nmemb: usize, size: usize),
-	pub free: extern fn(opaque: *mut libc::c_void, ptr: *mut libc::c_void),
-	pub opaque: *mut libc::c_void,
+	pub alloc: *mut extern fn(opaque: *mut c_void, nmemb: usize, size: usize),
+	pub free: extern fn(opaque: *mut c_void, ptr: *mut c_void),
+	pub opaque: *mut c_void,
 }
 
 
