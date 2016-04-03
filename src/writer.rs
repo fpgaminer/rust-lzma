@@ -31,7 +31,7 @@ use lzma_stream_wrapper::LzmaStreamWrapper;
 const DEFAULT_BUF_SIZE: usize = 4 * 1024;
 
 
-pub struct LzmaWriter<T> {
+pub struct LzmaWriter<T: Write> {
 	inner: T,
 	stream: LzmaStreamWrapper,
 	buffer: Vec<u8>,
@@ -69,8 +69,9 @@ impl<T: Write> LzmaWriter<T> {
 	}
 }
 
-impl<T> Drop for LzmaWriter<T> {
+impl<T: Write> Drop for LzmaWriter<T> {
 	fn drop(&mut self) {
+		self.finish().unwrap();
 		self.stream.end()
 	}
 }
