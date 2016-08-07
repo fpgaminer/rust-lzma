@@ -20,12 +20,12 @@ pub struct lzma_stream {
 	pub reserved_ptr2: *mut c_void,
 	pub reserved_ptr3: *mut c_void,
 	pub reserved_ptr4: *mut c_void,
-	pub reserved_int1: *mut u64,
-	pub reserved_int2: *mut u64,
-	pub reserved_int3: *mut usize,
-	pub reserved_int4: *mut usize,
-	pub reserved_enum1: u32,  // TODO: in base.h this is lzma_reserved_enum, which seems to compile to 4-bytes
-	pub reserved_enum2: u32,  // TODO: in base.h this is lzma_reserved_enum, which seems to compile to 4-bytes
+	pub reserved_int1: u64,
+	pub reserved_int2: u64,
+	pub reserved_int3: usize,
+	pub reserved_int4: usize,
+	pub reserved_enum1: lzma_reserved_enum,
+	pub reserved_enum2: lzma_reserved_enum,
 }
 
 impl lzma_stream {
@@ -75,6 +75,10 @@ pub enum lzma_action {
 	LZMA_FINISH        = 3,
 }
 
+#[repr(C)]
+pub enum lzma_reserved_enum {
+	LZMA_RESERVED_ENUM = 0,
+}
 
 #[repr(C)]
 #[derive(Clone, Copy)]
