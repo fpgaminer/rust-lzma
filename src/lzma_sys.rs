@@ -1,3 +1,5 @@
+#![allow(non_camel_case_types)]
+
 use std::os::raw::c_void;
 use std::mem;
 

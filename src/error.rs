@@ -1,4 +1,3 @@
-use std::io::{Write};
 use lzma_sys::*;
 use std::convert::From;
 use std::result::Result;
