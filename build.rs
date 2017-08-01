@@ -4,9 +4,10 @@ use pkg_config::find_library;
 
 
 fn main() {
-	if find_library("liblzma").is_ok() {
-		return
-	} else {
-		panic!("Could not find liblzma using pkg-config")
-	}
+	match find_library("liblzma") {
+		Ok(_) => {},
+        Err(err) => {
+    		panic!("Could not find liblzma using pkg-config: {}", err);
+    	}
+    }
 }
