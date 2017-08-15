@@ -20,7 +20,6 @@
 //! ```
 
 use std::io::{self, Write};
-use std::ops::Drop;
 use lzma_sys::*;
 use std;
 use error::LzmaError;
@@ -69,19 +68,12 @@ impl<T: Write> LzmaWriter<T> {
 	}
 }
 
-impl<T> Drop for LzmaWriter<T> {
-	fn drop(&mut self) {
-		self.stream.end()
-	}
-}
-
-
 impl<W: Write> LzmaWriter<W> {
 	/// Finalizes the LZMA stream so that it finishes compressing or decompressing.
 	///
 	/// This *must* be called after all writing is done to ensure the last pieces of the compressed
 	/// or decompressed stream get written out.
-	pub fn finish(&mut self) -> Result<(), LzmaError> {
+	pub fn finish(mut self) -> Result<W, LzmaError> {
 		loop {
 			match self.lzma_code_and_write(&[], lzma_action::LZMA_FINISH) {
 				Ok((lzma_ret::LZMA_STREAM_END,_)) => break,
@@ -90,7 +82,9 @@ impl<W: Write> LzmaWriter<W> {
 			}
 		}
 
-		Ok(())
+		self.stream.end();
+
+		Ok(self.inner)
 	}
 
 	fn lzma_code_and_write(&mut self, input: &[u8], action: lzma_action) -> Result<(lzma_ret, usize), LzmaError> {
