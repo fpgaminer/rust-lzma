@@ -25,7 +25,7 @@ use lzma_sys::*;
 use std;
 use error::LzmaError;
 use ::Direction;
-use lzma_stream_wrapper::LzmaStreamWrapper;
+use lzma_stream_wrapper::{LzmaStreamWrapper, LzmaCodeResult};
 
 
 const DEFAULT_BUF_SIZE: usize = 4 * 1024;
@@ -84,8 +84,12 @@ impl<W: Write> LzmaWriter<W> {
 	pub fn finish(&mut self) -> Result<(), LzmaError> {
 		loop {
 			match self.lzma_code_and_write(&[], lzma_action::LZMA_FINISH) {
-				Ok((lzma_ret::LZMA_STREAM_END,_)) => break,
-				Ok(_) => (),
+				Ok(LzmaCodeResult {
+					ret: Ok(lzma_ret::LZMA_STREAM_END),
+					bytes_read: _,
+					bytes_written: _,
+				}) => break,
+				Ok(_) => continue,
 				Err(err) => return Err(err),
 			}
 		}
@@ -93,25 +97,35 @@ impl<W: Write> LzmaWriter<W> {
 		Ok(())
 	}
 
-	fn lzma_code_and_write(&mut self, input: &[u8], action: lzma_action) -> Result<(lzma_ret, usize), LzmaError> {
+	fn lzma_code_and_write(&mut self, input: &[u8], action: lzma_action) -> Result<LzmaCodeResult, LzmaError> {
 		let result = self.stream.code(input, &mut self.buffer, action);
-		let ret = try!(result.ret);
+		let _ = try!(result.ret);
 
 		if result.bytes_written > 0 {
 			try!(Write::write_all(&mut self.inner, &self.buffer[..result.bytes_written]));
 		}
 
-		Ok((ret, result.bytes_read))
+		Ok(result)
 	}
 }
 
 
 impl<W: Write> Write for LzmaWriter<W> {
 	fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-		match self.lzma_code_and_write(buf, lzma_action::LZMA_RUN) {
-			Ok((_,bytes_read)) => Ok(bytes_read),
-			Err(LzmaError::Io(err)) => return Err(err),
-			Err(err) => return Err(io::Error::new(io::ErrorKind::Other, err)),
+		// Loop until at least one byte from buf was consumed in order to be
+		// compliant with std::io::Write trait API.
+		loop {
+			match self.lzma_code_and_write(buf, lzma_action::LZMA_RUN) {
+				Ok(result) => if result.bytes_read == 0 && result.bytes_written > 0 {
+					continue
+				} else {
+					// If result.bytes_read is zero, then neither was something
+					// written nor read. This indicates, something went wrong.
+					return Ok(result.bytes_read)
+				},
+				Err(LzmaError::Io(err)) => return Err(err),
+				Err(err) => return Err(io::Error::new(io::ErrorKind::Other, err)),
+			}
 		}
 	}
 
