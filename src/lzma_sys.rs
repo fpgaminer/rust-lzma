@@ -63,46 +63,40 @@ pub struct lzma_allocator {
 #[derive(Clone, Copy, Debug)]
 #[must_use]
 pub enum lzma_ret {
-	LZMA_OK                  = 0,
-	LZMA_STREAM_END          = 1,
-	LZMA_NO_CHECK            = 2,
-	LZMA_UNSUPPORTED_CHECK   = 3,
-	LZMA_GET_CHECK           = 4,
-	LZMA_MEM_ERROR           = 5,
-	LZMA_MEMLIMIT_ERROR      = 6,
-	LZMA_FORMAT_ERROR        = 7,
-	LZMA_OPTIONS_ERROR       = 8,
-	LZMA_DATA_ERROR          = 9,
-	LZMA_BUF_ERROR           = 10,
-	LZMA_PROG_ERROR          = 11,
+	LzmaOk                  = 0,
+	LzmaStreamEnd           = 1,
+	LzmaNoCheck             = 2,
+	LzmaUnsupportedCheck    = 3,
+	LzmaGetCheck            = 4,
+	LzmaMemError            = 5,
+	LzmaMemlimitError       = 6,
+	LzmaFormatError         = 7,
+	LzmaOptionsError        = 8,
+	LzmaDataError           = 9,
+	LzmaBufError            = 10,
+	LzmaProgError           = 11,
 }
 
 
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub enum lzma_action {
-	LZMA_RUN           = 0,
-	LZMA_SYNC_FLUSH    = 1,
-	LZMA_FULL_FLUSH    = 2,
-	LZMA_FULL_BARRIER  = 4,
-	LZMA_FINISH        = 3,
+	LzmaRun           = 0,
+	LzmaSyncFlush     = 1,
+	LzmaFullFlush     = 2,
+	LzmaFullBarrier   = 4,
+	LzmaFinish        = 3,
 }
 
 
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub enum lzma_check {
-	LZMA_CHECK_NONE     = 0,
-	LZMA_CHECK_CRC32    = 1,
-	LZMA_CHECK_CRC64    = 4,
-	LZMA_CHECK_SHA256   = 10,
+	LzmaCheckNone      = 0,
+	LzmaCheckCrc32     = 1,
+	LzmaCheckCrc64     = 4,
+	LzmaCheckSha256    = 10,
 }
-
-
-pub const LZMA_CONCATENATED: u32            = 0x08;
-pub const LZMA_TELL_NO_CHECK: u32           = 0x01;
-pub const LZMA_TELL_UNSUPPORTED_CHECK: u32  = 0x02;
-pub const LZMA_TELL_ANY_CHECK: u32          = 0x04;
 
 
 extern {

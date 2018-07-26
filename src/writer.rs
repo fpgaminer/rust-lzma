@@ -58,7 +58,7 @@ impl<T: Write> LzmaWriter<T> {
 
 		match writer.direction {
 			Direction::Compress => {
-				try!(writer.stream.easy_encoder(preset, lzma_check::LZMA_CHECK_CRC64))
+				try!(writer.stream.easy_encoder(preset, lzma_check::LzmaCheckCrc64))
 			},
 			Direction::Decompress => {
 				try!(writer.stream.stream_decoder(std::u64::MAX, 0))
@@ -83,8 +83,8 @@ impl<W: Write> LzmaWriter<W> {
 	/// or decompressed stream get written out.
 	pub fn finish(&mut self) -> Result<(), LzmaError> {
 		loop {
-			match self.lzma_code_and_write(&[], lzma_action::LZMA_FINISH) {
-				Ok((lzma_ret::LZMA_STREAM_END,_)) => break,
+			match self.lzma_code_and_write(&[], lzma_action::LzmaFinish) {
+				Ok((lzma_ret::LzmaStreamEnd,_)) => break,
 				Ok(_) => (),
 				Err(err) => return Err(err),
 			}
@@ -108,7 +108,7 @@ impl<W: Write> LzmaWriter<W> {
 
 impl<W: Write> Write for LzmaWriter<W> {
 	fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-		match self.lzma_code_and_write(buf, lzma_action::LZMA_RUN) {
+		match self.lzma_code_and_write(buf, lzma_action::LzmaRun) {
 			Ok((_,bytes_read)) => Ok(bytes_read),
 			Err(LzmaError::Io(err)) => return Err(err),
 			Err(err) => return Err(io::Error::new(io::ErrorKind::Other, err)),
