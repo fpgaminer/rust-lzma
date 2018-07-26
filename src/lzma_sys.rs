@@ -4,17 +4,30 @@ use std::mem;
 
 #[repr(C)]
 pub struct lzma_stream {
+	/// < Pointer to the next input byte.
 	pub next_in: *const u8,
+	/// < Number of available input bytes in next_in.
 	pub avail_in: usize,
+	/// < Total number of bytes read by liblzma.
 	pub total_in: u64,
 
+	/// < Pointer to the next output position.
 	pub next_out: *mut u8,
+	/// < Amount of free space in next_out.
 	pub avail_out: usize,
+	/// < Total number of bytes written by liblzma.
 	pub total_out: u64,
 
+	/// \brief       Custom memory allocation functions
+	///
+	/// In most cases this is NULL which makes liblzma use
+	/// the standard malloc() and free().
+	///
+	/// \note        In 5.0.x this is not a const pointer.
 	pub allocator: *const lzma_allocator,
 
-	pub internal: *mut c_void,   /* Actually lzma_internal, but lzma_internal is opaque */
+	/// Internal state is not visible to applications.
+	pub internal: *mut c_void,    // Actually a pointer to lzma_internal, but lzma_internal is opaque
 
 	pub reserved_ptr1: *mut c_void,
 	pub reserved_ptr2: *mut c_void,
@@ -24,8 +37,8 @@ pub struct lzma_stream {
 	pub reserved_int2: u64,
 	pub reserved_int3: usize,
 	pub reserved_int4: usize,
-	pub reserved_enum1: lzma_reserved_enum,
-	pub reserved_enum2: lzma_reserved_enum,
+	pub reserved_enum1: u32,    // Actually an enum, but it's opaque so we stub with u32
+	pub reserved_enum2: u32,    // Actually an enum, but it's opaque so we stub with u32
 }
 
 impl lzma_stream {
@@ -75,10 +88,6 @@ pub enum lzma_action {
 	LZMA_FINISH        = 3,
 }
 
-#[repr(C)]
-pub enum lzma_reserved_enum {
-	LZMA_RESERVED_ENUM = 0,
-}
 
 #[repr(C)]
 #[derive(Clone, Copy)]

@@ -29,7 +29,7 @@ pub enum Direction {
 	Decompress,
 }
 
-pub mod lzma_sys;
+mod lzma_sys;
 pub mod lzma_stream_wrapper;
 pub mod reader;
 pub mod writer;
