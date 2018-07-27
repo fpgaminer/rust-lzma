@@ -16,12 +16,12 @@
 //! # Examples
 //!
 //! ```
-//! let test_string = "Like tears in rain".to_string();
-//! let mut compressed = lzma::compress(&test_string.into_bytes(), 6).unwrap();
+//! let test_string = "Like tears in rain";
+//! let mut compressed = lzma::compress(test_string.as_bytes(), 6).unwrap();
 //! let decompressed = lzma::decompress(&mut compressed).unwrap();
 //! let decompressed_str = String::from_utf8(decompressed).unwrap();
 //!
-//! assert_eq!("Like tears in rain", decompressed_str);
+//! assert_eq!(test_string, decompressed_str);
 //! ```
 
 pub enum Direction {
