@@ -1,6 +1,6 @@
 # rust-lzma [![Build Status](https://travis-ci.org/fpgaminer/rust-lzma.svg?branch=master)](https://travis-ci.org/fpgaminer/rust-lzma) [![Crates.io](https://img.shields.io/crates/v/rust-lzma.svg)](https://crates.io/crates/rust-lzma) #
 
-[Documentation](https://fpgaminer.github.io/doc/lzma/)
+[Documentation](https://docs.rs/rust-lzma/)
 
 This crate provides a simple interface to liblzma.  LZMA is more commonly known
 as XZ or 7zip, (as in, files with the `.xz` or `.7z` file extension). LZMA
