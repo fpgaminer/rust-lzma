@@ -3,6 +3,7 @@
 use lzma_sys::*;
 use error::{LzmaError, LzmaLibResult};
 use std::ptr;
+use std::ops::Drop;
 
 
 pub struct LzmaStreamWrapper {
@@ -77,5 +78,14 @@ impl LzmaStreamWrapper {
 			bytes_read: bytes_read,
 			bytes_written: bytes_written,
 		}
+	}
+}
+
+// This makes sure to call lzma_end, which frees memory that liblzma has allocated internally
+// Note: It appears to be safe to call lzma_end multiple times; so this Drop is safe
+// even if the user has already called end.
+impl Drop for LzmaStreamWrapper {
+	fn drop(&mut self) {
+		self.end();
 	}
 }

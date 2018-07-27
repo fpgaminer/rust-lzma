@@ -21,7 +21,6 @@
 //! ```
 
 use std::io::{self, Read};
-use std::ops::Drop;
 use lzma_sys::*;
 use std;
 use error::LzmaError;
@@ -72,12 +71,8 @@ impl<T: Read> LzmaReader<T> {
 
 		Ok(reader)
 	}
-}
 
-impl<T> Drop for LzmaReader<T> {
-	fn drop(&mut self) {
-		self.stream.end()
-	}
+	pub fn into_inner(self) -> T { self.inner }
 }
 
 

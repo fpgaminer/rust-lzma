@@ -86,8 +86,6 @@ impl<W: Write> LzmaWriter<W> {
 			}
 		}
 
-		self.stream.end();
-
 		Ok(self.inner)
 	}
 
