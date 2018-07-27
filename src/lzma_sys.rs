@@ -80,6 +80,7 @@ pub enum lzma_ret {
 
 #[repr(C)]
 #[derive(Clone, Copy)]
+#[allow(dead_code)]
 pub enum lzma_action {
 	LzmaRun           = 0,
 	LzmaSyncFlush     = 1,
@@ -91,6 +92,7 @@ pub enum lzma_action {
 
 #[repr(C)]
 #[derive(Clone, Copy)]
+#[allow(dead_code)]
 pub enum lzma_check {
 	LzmaCheckNone      = 0,
 	LzmaCheckCrc32     = 1,

@@ -30,7 +30,7 @@ pub enum Direction {
 }
 
 mod lzma_sys;
-pub mod lzma_stream_wrapper;
+mod lzma_stream_wrapper;
 pub mod reader;
 pub mod writer;
 pub mod error;
