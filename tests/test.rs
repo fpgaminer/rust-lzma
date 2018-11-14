@@ -5,7 +5,10 @@ use std::io::{Read, Cursor, Write};
 use std::thread;
 
 
+// A large text file used for testing
 const TEST_STRING: &'static str = include_str!("test_file.txt");
+// Should be test_file.txt compressed in the legacy lzma format.
+const TEST_LEGACY_DATA: &'static [u8] = include_bytes!("test_file.lzma");
 
 
 #[test]
@@ -103,4 +106,12 @@ fn test_string_1() {
 	writer.write_all(input).unwrap();
 	let buffer = writer.finish().unwrap();
 	assert_eq!(buffer.len(), 73984);    // Original string is 73,984 * b'a'.
+}
+
+
+// Test that we can decompress a legacy .lzma file
+#[test]
+fn test_legacy_format() {
+	let decompressed = lzma::decompress(TEST_LEGACY_DATA).unwrap();
+	assert_eq!(decompressed, TEST_STRING.as_bytes());
 }

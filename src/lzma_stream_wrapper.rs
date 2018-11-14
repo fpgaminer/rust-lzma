@@ -41,7 +41,7 @@ impl LzmaStreamWrapper {
 
 	pub fn stream_decoder(&mut self, memlimit: u64, flags: u32) -> Result<(), LzmaError> {
 		unsafe {
-			LzmaLibResult::from(lzma_stream_decoder(&mut self.stream, memlimit, flags)).map(|_| ())
+			LzmaLibResult::from(lzma_auto_decoder(&mut self.stream, memlimit, flags)).map(|_| ())
 		}
 	}
 

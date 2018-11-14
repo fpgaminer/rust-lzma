@@ -105,5 +105,5 @@ extern {
 	pub fn lzma_easy_encoder(stream: *mut lzma_stream, preset: u32, check: lzma_check) -> lzma_ret;
 	pub fn lzma_code(stream: *mut lzma_stream, action: lzma_action) -> lzma_ret;
 	pub fn lzma_end(stream: *mut lzma_stream);
-	pub fn lzma_stream_decoder(stream: *mut lzma_stream, memlimit: u64, flags: u32) -> lzma_ret;
+	pub fn lzma_auto_decoder(stream: *mut lzma_stream, memlimit: u64, flags: u32) -> lzma_ret;
 }
