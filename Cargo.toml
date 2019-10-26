@@ -16,4 +16,4 @@ name = "lzma"
 [dependencies]
 
 [build-dependencies]
-pkg-config = "^0.3"
+pkg-config = "^0.3.3"
