@@ -62,10 +62,10 @@ impl<T: Read> LzmaReader<T> {
 
 		match reader.direction {
 			Direction::Compress => {
-				try!(reader.stream.easy_encoder(preset, lzma_check::LzmaCheckCrc64))
+				reader.stream.easy_encoder(preset, lzma_check::LzmaCheckCrc64)?
 			},
 			Direction::Decompress => {
-				try!(reader.stream.stream_decoder(std::u64::MAX, 0))
+				reader.stream.stream_decoder(std::u64::MAX, 0)?
 			},
 		}
 
@@ -91,7 +91,7 @@ impl<R: Read> Read for LzmaReader<R> {
 			// If our internal read buffer is empty, re-fill it by calling read on the inner Read object.
 			if self.buffer_len == 0 {
 				self.buffer_offset = 0;
-				self.buffer_len = try!(self.inner.read(&mut self.buffer));
+				self.buffer_len = self.inner.read(&mut self.buffer)?;
 
 				if self.buffer_len == 0 {
 					action = lzma_action::LzmaFinish;

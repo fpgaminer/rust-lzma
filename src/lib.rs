@@ -52,9 +52,9 @@ pub fn compress(buf: &[u8], preset: u32) -> Result<Vec<u8>, LzmaError> {
 	let mut output: Vec<u8> = Vec::new();
 
 	{
-		let mut reader = try!(LzmaReader::new_compressor(buf, preset));
+		let mut reader = LzmaReader::new_compressor(buf, preset)?;
 
-		try!(reader.read_to_end(&mut output));
+		reader.read_to_end(&mut output)?;
 	}
 
 	Ok(output)
@@ -66,9 +66,9 @@ pub fn decompress(buf: &[u8]) -> Result<Vec<u8>, LzmaError> {
 	let mut output: Vec<u8> = Vec::new();
 
 	{
-		let mut reader = try!(LzmaReader::new_decompressor(buf));
+		let mut reader = LzmaReader::new_decompressor(buf)?;
 
-		try!(reader.read_to_end(&mut output));
+		reader.read_to_end(&mut output)?;
 	}
 
 	Ok(output)

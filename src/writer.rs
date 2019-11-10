@@ -57,10 +57,10 @@ impl<T: Write> LzmaWriter<T> {
 
 		match writer.direction {
 			Direction::Compress => {
-				try!(writer.stream.easy_encoder(preset, lzma_check::LzmaCheckCrc64))
+				writer.stream.easy_encoder(preset, lzma_check::LzmaCheckCrc64)?
 			},
 			Direction::Decompress => {
-				try!(writer.stream.stream_decoder(std::u64::MAX, 0))
+				writer.stream.stream_decoder(std::u64::MAX, 0)?
 			},
 		}
 
@@ -91,10 +91,12 @@ impl<W: Write> LzmaWriter<W> {
 
 	fn lzma_code_and_write(&mut self, input: &[u8], action: lzma_action) -> Result<LzmaCodeResult, LzmaError> {
 		let result = self.stream.code(input, &mut self.buffer, action);
-		let _ = try!(result.ret);
+		if let Err(err) = result.ret {
+			return Err(err);
+		}
 
 		if result.bytes_written > 0 {
-			try!(Write::write_all(&mut self.inner, &self.buffer[..result.bytes_written]));
+			Write::write_all(&mut self.inner, &self.buffer[..result.bytes_written])?;
 		}
 
 		Ok(result)
