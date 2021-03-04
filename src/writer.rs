@@ -30,7 +30,7 @@ use lzma_stream_wrapper::{LzmaStreamWrapper, LzmaCodeResult};
 const DEFAULT_BUF_SIZE: usize = 4 * 1024;
 
 
-pub struct LzmaWriter<T> {
+pub struct LzmaWriter<T: Write> {
 	inner: T,
 	stream: LzmaStreamWrapper,
 	buffer: Vec<u8>,
@@ -73,7 +73,7 @@ impl<W: Write> LzmaWriter<W> {
 	///
 	/// This *must* be called after all writing is done to ensure the last pieces of the compressed
 	/// or decompressed stream get written out.
-	pub fn finish(mut self) -> Result<W, LzmaError> {
+	pub fn finish(mut self) {
 		loop {
 			match self.lzma_code_and_write(&[], lzma_action::LzmaFinish) {
 				Ok(LzmaCodeResult {
@@ -82,11 +82,9 @@ impl<W: Write> LzmaWriter<W> {
 					bytes_written: _,
 				}) => break,
 				Ok(_) => continue,
-				Err(err) => return Err(err),
+				Err(_) => break,
 			}
 		}
-
-		Ok(self.inner)
 	}
 
 	fn lzma_code_and_write(&mut self, input: &[u8], action: lzma_action) -> Result<LzmaCodeResult, LzmaError> {
@@ -126,4 +124,20 @@ impl<W: Write> Write for LzmaWriter<W> {
 	fn flush(&mut self) -> io::Result<()> {
 		self.inner.flush()
 	}
+}
+
+impl<W: Write> Drop for LzmaWriter<W> {
+    fn drop(&mut self) {
+        loop {
+			match self.lzma_code_and_write(&[], lzma_action::LzmaFinish) {
+				Ok(LzmaCodeResult {
+					ret: Ok(lzma_ret::LzmaStreamEnd),
+					bytes_read: _,
+					bytes_written: _,
+				}) => break,
+				Ok(_) => continue,
+				Err(_) => break,
+			}
+		}
+    }
 }
