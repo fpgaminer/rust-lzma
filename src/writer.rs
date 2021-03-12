@@ -71,7 +71,7 @@ impl<T: Write> LzmaWriter<T> {
 impl<W: Write> LzmaWriter<W> {
 	/// Finalizes the LZMA stream so that it finishes compressing or decompressing.
 	///
-	/// This *must* be called after all writing is done to ensure the last pieces of the compressed
+	/// This can be called after all writing is done to ensure the last pieces of the compressed
 	/// or decompressed stream get written out.
 	pub fn finish(mut self) -> Result<(), LzmaError> {
 		loop {
