@@ -73,7 +73,7 @@ impl<W: Write> LzmaWriter<W> {
 	///
 	/// This *must* be called after all writing is done to ensure the last pieces of the compressed
 	/// or decompressed stream get written out.
-	pub fn finish(mut self) {
+	pub fn finish(mut self) -> Result<(), LzmaError> {
 		loop {
 			match self.lzma_code_and_write(&[], lzma_action::LzmaFinish) {
 				Ok(LzmaCodeResult {
@@ -82,9 +82,10 @@ impl<W: Write> LzmaWriter<W> {
 					bytes_written: _,
 				}) => break,
 				Ok(_) => continue,
-				Err(_) => break,
+				Err(err) => return Err(err),
 			}
 		}
+		Ok(())
 	}
 
 	fn lzma_code_and_write(&mut self, input: &[u8], action: lzma_action) -> Result<LzmaCodeResult, LzmaError> {
