@@ -32,7 +32,7 @@ impl fmt::Display for LzmaError {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match *self {
 			LzmaError::Io(ref err) => write!(f, "{}", err),
-			_ => write!(f, "{}", self.description()),
+			_ => write!(f, "{}", self.to_string()),
 		}
 	}
 }

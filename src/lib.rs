@@ -41,7 +41,7 @@ pub use writer::LzmaWriter;
 pub use error::LzmaError;
 
 
-pub const EXTREME_PRESET: u32 = (1 << 31);
+pub const EXTREME_PRESET: u32 = 1 << 31;
 
 
 /// Compress `buf` and return the result.
