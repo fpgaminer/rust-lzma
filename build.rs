@@ -1,12 +1,13 @@
-extern crate pkg_config;
-
-use pkg_config::find_library;
-
+use std::env;
 
 fn main() {
-	if find_library("liblzma").is_ok() {
-		return
-	} else {
-		panic!("Could not find liblzma using pkg-config")
-	}
+    let statik = env::var("CARGO_FEATURE_STATIC").is_ok();
+
+    pkg_config::Config::new()
+        .statik(statik)
+        .probe("liblzma")
+        .expect("Could not find liblzma using pkg-config");
+    if statik {
+        println!("cargo:rustc-link-lib=static=lzma");
+    }
 }
