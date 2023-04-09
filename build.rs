@@ -12,7 +12,7 @@ fn main() {
             .find_package("liblzma")
             .expect("Could not find liblzma using vcpkg");
     } else {
-        #[cfg(unix)]
+        #[cfg(not(windows))]
         pkg_config::Config::new()
             .statik(statik)
             .probe("liblzma")
