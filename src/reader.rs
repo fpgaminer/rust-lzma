@@ -52,12 +52,12 @@ impl<T: Read> LzmaReader<T> {
 
 	pub fn with_capacity(capacity: usize, inner: T, direction: Direction, preset: u32) -> Result<LzmaReader<T>, LzmaError> {
 		let mut reader = LzmaReader {
-			inner: inner,
+			inner,
 			stream: LzmaStreamWrapper::new(),
 			buffer: vec![0; capacity],
 			buffer_offset: 0,
 			buffer_len: 0,
-			direction: direction,
+			direction,
 		};
 
 		match reader.direction {
@@ -81,7 +81,7 @@ impl<R: Read> Read for LzmaReader<R> {
 	/// into buf.
 	fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
 		// Our code doesn't handle buf.len() being 0, so exit early
-		if buf.len() == 0 {
+		if buf.is_empty() {
 			return Ok(0);
 		}
 

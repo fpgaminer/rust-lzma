@@ -49,10 +49,10 @@ impl<T: Write> LzmaWriter<T> {
 
 	pub fn with_capacity(capacity: usize, inner: T, direction: Direction, preset: u32) -> Result<LzmaWriter<T>, LzmaError> {
 		let mut writer = LzmaWriter {
-			inner: inner,
+			inner,
 			stream: LzmaStreamWrapper::new(),
 			buffer: vec![0; capacity],
-			direction: direction,
+			direction,
 		};
 
 		match writer.direction {
@@ -89,6 +89,7 @@ impl<W: Write> LzmaWriter<W> {
 		Ok(self.inner)
 	}
 
+	#[allow(clippy::question_mark)]
 	fn lzma_code_and_write(&mut self, input: &[u8], action: lzma_action) -> Result<LzmaCodeResult, LzmaError> {
 		let result = self.stream.code(input, &mut self.buffer, action);
 		if let Err(err) = result.ret {

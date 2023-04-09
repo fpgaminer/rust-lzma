@@ -59,6 +59,7 @@ pub struct lzma_allocator {
 }
 
 
+#[allow(clippy::enum_variant_names)]
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
 #[must_use]
@@ -78,6 +79,7 @@ pub enum lzma_ret {
 }
 
 
+#[allow(clippy::enum_variant_names)]
 #[repr(C)]
 #[derive(Clone, Copy)]
 #[allow(dead_code)]

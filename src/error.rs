@@ -31,8 +31,14 @@ pub enum LzmaError {
 impl fmt::Display for LzmaError {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match *self {
+			LzmaError::Mem => write!(f, "Memory allocation failed"),
+			LzmaError::MemLimit => write!(f, "Memory limit would be violated"),
+			LzmaError::Format => write!(f, "XZ magic bytes were not found"),
+			LzmaError::Options => write!(f, "Unsupported compression options"),
+			LzmaError::Data => write!(f, "Corrupt data"),
+			LzmaError::Buf => write!(f, "Data look like it was truncated or possibly corrupt"),
 			LzmaError::Io(ref err) => write!(f, "{}", err),
-			_ => write!(f, "{}", self.to_string()),
+			LzmaError::Other => write!(f, "Unknown error"),
 		}
 	}
 }

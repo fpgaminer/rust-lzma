@@ -74,9 +74,9 @@ impl LzmaStreamWrapper {
 		self.stream.avail_out = 0;
 
 		LzmaCodeResult {
-			ret: ret,
-			bytes_read: bytes_read,
-			bytes_written: bytes_written,
+			ret,
+			bytes_read,
+			bytes_written,
 		}
 	}
 }
