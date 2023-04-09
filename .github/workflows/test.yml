@@ -1,0 +1,34 @@
+name: Test
+on: [push, pull_request]
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: check
+  
+  test:
+    name: Run test suite
+    runs-on: ubuntu-latest
+    container: rust:latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    
+    - name: Install dependencies
+      run: |
+        apt-get update -y
+        apt-get install -y pkg-config liblzma-dev
+    
+    - name: Run tests
+      run: cargo test
