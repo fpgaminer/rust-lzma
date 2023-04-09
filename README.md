@@ -1,4 +1,4 @@
-# rust-lzma [![Build Status](https://travis-ci.org/fpgaminer/rust-lzma.svg?branch=master)](https://travis-ci.org/fpgaminer/rust-lzma) [![Crates.io](https://img.shields.io/crates/v/rust-lzma.svg)](https://crates.io/crates/rust-lzma) #
+# rust-lzma [![Crates.io](https://img.shields.io/crates/v/rust-lzma.svg)](https://crates.io/crates/rust-lzma) #
 
 [Documentation](https://docs.rs/rust-lzma/)
 
@@ -21,7 +21,7 @@ See the documentation for details on usage.
 Cargo.toml:
 ```toml
 [dependencies]
-rust-lzma = "0.5"
+rust-lzma = "0.6"
 ```
 main.rs:
 ```Rust
